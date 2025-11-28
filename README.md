@@ -18,7 +18,7 @@ MCP (Model Context Protocol) server for image session management and processing.
 - **list_session**: List all active image sessions
 - **get_dimensions**: Get image dimensions and MIME type
 - **pick_color**: Extract average color from a specified region
-- **remove_background**: Remove background from images using flood-fill algorithm
+- **remove_background**: Remove background from images using ML-based segmentation
 - Built with TypeScript for type safety
 - Uses [sharp](https://sharp.pixelplumbing.com/) for high-performance image processing
 
@@ -267,22 +267,19 @@ Coordinates (2000, 500) exceed image bounds (1920x1080).
 
 ### remove_background
 
-Removes the background from an image by sampling edge colors and using flood-fill algorithm. Returns PNG with transparency.
+Removes the background from an image using ML-based segmentation. Returns PNG with transparency. Powered by [@imgly/background-removal-node](https://www.npmjs.com/package/@imgly/background-removal-node) for accurate subject detection.
 
 **Parameters:**
 
 - `sessionId` (string, required): The session ID returned from create_session
 - `output_path` (string, optional): Absolute path to save the output PNG file. If not provided, returns base64 payload.
-- `tolerance` (number, optional, default: 30): Color tolerance for background matching (0-255). Higher values remove more similar colors.
-- `edge_feathering` (number, optional, default: 2): Anti-aliasing radius for smoother edges (0-5).
 
 **Returns (without output_path):**
 
 ```json
 {
   "image_payload": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "mime_type": "image/png",
-  "removed_pixel_count": 125000
+  "mime_type": "image/png"
 }
 ```
 
@@ -290,8 +287,7 @@ Removes the background from an image by sampling edge colors and using flood-fil
 
 ```json
 {
-  "path": "/path/to/output.png",
-  "removed_pixel_count": 125000
+  "path": "/path/to/output.png"
 }
 ```
 
@@ -299,18 +295,11 @@ Removes the background from an image by sampling edge colors and using flood-fil
 
 ```json
 {
-  "sessionId": "img_abc123xyz",
-  "tolerance": 40,
-  "edge_feathering": 3
+  "sessionId": "img_abc123xyz"
 }
 ```
 
-**Algorithm Features:**
-
-- **Edge Sampling**: Samples colors from all four edges to accurately identify background color
-- **Adaptive Tolerance**: Automatically adjusts tolerance based on background color variance
-- **Sobel Edge Detection**: Protects subject boundaries from being eroded
-- **Gaussian Feathering**: Applies smooth anti-aliasing at background/foreground boundaries
+**Note:** The first run may take longer as the ML model files (~10-50MB) are downloaded and cached.
 
 **Before & After:**
 
@@ -409,7 +398,7 @@ The project follows a modular architecture:
   - `list-session.ts`: Session listing
   - `get-image-size.ts`: Image dimensions extraction (get_dimensions)
   - `pick-color.ts`: Color extraction
-  - `remove-background.ts`: Background removal with flood-fill
+  - `remove-background.ts`: ML-based background removal
 - **utils/**: Shared utilities
   - `validation.ts`: Session ID validation
 - **server.ts**: Main MCP server setup and configuration

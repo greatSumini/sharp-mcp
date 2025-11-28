@@ -20,6 +20,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:ml": "node scripts/test-remove-background.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -45,6 +46,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "commander": "^14.0.1",
     "nanoid": "^5.0.9",

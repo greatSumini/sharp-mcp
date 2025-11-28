@@ -13,20 +13,6 @@ const inputSchema = z.object({
     .describe(
       "Optional absolute path to save the output PNG file. If not provided, returns base64 payload."
     ),
-  tolerance: z
-    .number()
-    .min(0)
-    .max(255)
-    .optional()
-    .default(30)
-    .describe("Color tolerance for background matching (0-255, default: 30)"),
-  edge_feathering: z
-    .number()
-    .min(0)
-    .max(5)
-    .optional()
-    .default(2)
-    .describe("Anti-aliasing radius for smoother edges (0-5, default: 2)"),
 });
 
 type InputType = z.infer<typeof inputSchema>;
@@ -35,7 +21,7 @@ export function createRemoveBackgroundTool() {
   return {
     name: "remove_background",
     description:
-      "Removes the background from an image by sampling edge colors and using flood-fill algorithm. Returns PNG with transparency. Supports adaptive tolerance based on background uniformity and edge feathering for smooth results.",
+      "Removes the background from an image using ML-based segmentation. Returns PNG with transparency. Powered by @imgly/background-removal-node for accurate subject detection.",
     inputSchema,
     async handler(input: InputType) {
       try {
@@ -95,10 +81,7 @@ export function createRemoveBackgroundTool() {
           }
         }
 
-        const result = await removeBackground(session.image_payload, {
-          tolerance: input.tolerance,
-          edgeFeathering: input.edge_feathering,
-        });
+        const result = await removeBackground(session.image_payload);
 
         if (input.output_path) {
           await fs.writeFile(input.output_path, result.buffer);
