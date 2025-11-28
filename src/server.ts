@@ -9,6 +9,7 @@ import { createCreateSessionTool } from "./tools/create-session.js";
 import { createListSessionTool } from "./tools/list-session.js";
 import { createGetImageSizeTool } from "./tools/get-image-size.js";
 import { createPickColorTool } from "./tools/pick-color.js";
+import { createRemoveBackgroundTool } from "./tools/remove-background.js";
 
 /** Default HTTP server port */
 const DEFAULT_PORT = 5000;
@@ -55,7 +56,7 @@ const CLI_PORT = (() => {
 function createServerInstance() {
   const server = new McpServer({
     name: "sharp-mcp",
-    version: "0.2.0",
+    version: "0.2.1",
   });
 
   // Create and register tools
@@ -63,6 +64,7 @@ function createServerInstance() {
   const listSessionTool = createListSessionTool();
   const getImageSizeTool = createGetImageSizeTool();
   const pickColorTool = createPickColorTool();
+  const removeBackgroundTool = createRemoveBackgroundTool();
 
   server.registerTool(
     createSessionTool.name,
@@ -106,6 +108,17 @@ function createServerInstance() {
       outputSchema: undefined,
     },
     pickColorTool.handler
+  );
+
+  server.registerTool(
+    removeBackgroundTool.name,
+    {
+      title: "Remove Background",
+      description: removeBackgroundTool.description,
+      inputSchema: removeBackgroundTool.inputSchema.shape,
+      outputSchema: undefined,
+    },
+    removeBackgroundTool.handler
   );
 
   return server;

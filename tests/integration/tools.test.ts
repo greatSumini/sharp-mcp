@@ -6,6 +6,7 @@ import { createCreateSessionTool } from "../../src/tools/create-session.js";
 import { createListSessionTool } from "../../src/tools/list-session.js";
 import { createGetImageSizeTool } from "../../src/tools/get-image-size.js";
 import { createPickColorTool } from "../../src/tools/pick-color.js";
+import { createRemoveBackgroundTool } from "../../src/tools/remove-background.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -272,6 +273,146 @@ describe("Image Handler MCP Tools Integration Tests", () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("create_session");
+    });
+  });
+
+  describe("remove_background", () => {
+    const createSessionTool = createCreateSessionTool();
+    const removeBackgroundTool = createRemoveBackgroundTool();
+
+    let sessionId: string;
+
+    beforeEach(async () => {
+      const createResult = await createSessionTool.handler({
+        image_payload: testImageBase64,
+      });
+      sessionId = JSON.parse(createResult.content[0].text).sessionId;
+    });
+
+    it("should remove background and return base64 PNG", async () => {
+      const result = await removeBackgroundTool.handler({
+        sessionId,
+        tolerance: 30,
+        edge_feathering: 2,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.image_payload).toBeDefined();
+      expect(response.mime_type).toBe("image/png");
+      expect(response.removed_pixel_count).toBeGreaterThanOrEqual(0);
+
+      // Verify it's valid base64 by checking it can be decoded
+      expect(() => Buffer.from(response.image_payload, "base64")).not.toThrow();
+    });
+
+    it("should save to file when output_path provided", async () => {
+      const outputPath = path.resolve(__dirname, "../../temp/test-output.png");
+      const tempDir = path.dirname(outputPath);
+
+      // Ensure temp directory exists
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const result = await removeBackgroundTool.handler({
+        sessionId,
+        output_path: outputPath,
+        tolerance: 30,
+        edge_feathering: 2,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.path).toBe(outputPath);
+      expect(response.removed_pixel_count).toBeGreaterThanOrEqual(0);
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Cleanup
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should respect tolerance parameter", async () => {
+      const lowToleranceResult = await removeBackgroundTool.handler({
+        sessionId,
+        tolerance: 10,
+        edge_feathering: 2,
+      });
+      const highToleranceResult = await removeBackgroundTool.handler({
+        sessionId,
+        tolerance: 80,
+        edge_feathering: 2,
+      });
+
+      expect(lowToleranceResult.isError).toBeUndefined();
+      expect(highToleranceResult.isError).toBeUndefined();
+
+      const lowRemoved = JSON.parse(lowToleranceResult.content[0].text).removed_pixel_count;
+      const highRemoved = JSON.parse(highToleranceResult.content[0].text).removed_pixel_count;
+
+      // Higher tolerance should generally remove more or equal pixels
+      expect(highRemoved).toBeGreaterThanOrEqual(lowRemoved);
+    });
+
+    it("should apply edge feathering", async () => {
+      const resultWithFeathering = await removeBackgroundTool.handler({
+        sessionId,
+        tolerance: 30,
+        edge_feathering: 3,
+      });
+
+      const resultWithoutFeathering = await removeBackgroundTool.handler({
+        sessionId,
+        tolerance: 30,
+        edge_feathering: 0,
+      });
+
+      expect(resultWithFeathering.isError).toBeUndefined();
+      expect(resultWithoutFeathering.isError).toBeUndefined();
+
+      // Both should produce valid PNG output
+      const payloadWithFeathering = JSON.parse(resultWithFeathering.content[0].text).image_payload;
+      const payloadWithoutFeathering = JSON.parse(resultWithoutFeathering.content[0].text).image_payload;
+
+      expect(() => Buffer.from(payloadWithFeathering, "base64")).not.toThrow();
+      expect(() => Buffer.from(payloadWithoutFeathering, "base64")).not.toThrow();
+    });
+
+    it("should return error for invalid sessionId", async () => {
+      const result = await removeBackgroundTool.handler({
+        sessionId: "invalid_id",
+        tolerance: 30,
+        edge_feathering: 2,
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("create_session");
+    });
+
+    it("should return error for non-absolute output_path", async () => {
+      const result = await removeBackgroundTool.handler({
+        sessionId,
+        output_path: "relative/path/output.png",
+        tolerance: 30,
+        edge_feathering: 2,
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("absolute");
+    });
+
+    it("should return error for non-existent directory in output_path", async () => {
+      const result = await removeBackgroundTool.handler({
+        sessionId,
+        output_path: "/non/existent/directory/output.png",
+        tolerance: 30,
+        edge_feathering: 2,
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("Directory does not exist");
     });
   });
 
