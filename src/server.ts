@@ -57,7 +57,7 @@ const CLI_PORT = (() => {
 function createServerInstance() {
   const server = new McpServer({
     name: "sharp-mcp",
-    version: "0.2.1",
+    version: "0.2.2",
   });
 
   // Create and register tools
