@@ -54,8 +54,8 @@ const CLI_PORT = (() => {
 // Function to create a new server instance with all tools registered
 function createServerInstance() {
   const server = new McpServer({
-    name: "image-handler-mcp",
-    version: "0.1.1",
+    name: "sharp-mcp",
+    version: "0.2.0",
   });
 
   // Create and register tools
@@ -169,7 +169,7 @@ async function main() {
       httpServer.listen(port, () => {
         actualPort = port;
         console.error(
-          `Image Handler MCP Server running on ${transportType.toUpperCase()} at http://localhost:${actualPort}/mcp`
+          `Sharp MCP Server running on ${transportType.toUpperCase()} at http://localhost:${actualPort}/mcp`
         );
       });
     };
@@ -181,7 +181,7 @@ async function main() {
     const server = createServerInstance();
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error(`Image Handler MCP Server running on stdio`);
+    console.error(`Sharp MCP Server running on stdio`);
   }
 }
 

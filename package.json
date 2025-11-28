@@ -1,11 +1,11 @@
 {
-  "name": "image-handler-mcp",
-  "version": "0.1.1",
+  "name": "sharp-mcp",
+  "version": "0.2.0",
   "description": "MCP server for image session management and processing",
   "main": "dist/server.js",
   "type": "module",
   "bin": {
-    "image-handler-mcp": "dist/server.js"
+    "sharp-mcp": "dist/server.js"
   },
   "files": [
     "dist/**/*",
@@ -35,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/choesumin/image-handler-mcp.git"
+    "url": "https://github.com/choesumin/sharp-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/choesumin/image-handler-mcp/issues"
+    "url": "https://github.com/choesumin/sharp-mcp/issues"
   },
-  "homepage": "https://github.com/choesumin/image-handler-mcp#readme",
+  "homepage": "https://github.com/choesumin/sharp-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   },

@@ -1,8 +1,8 @@
-# Image Handler MCP
+# Sharp MCP
 
-![Image Handler MCP Banner](./images/banner.png)
+![Sharp MCP Banner](./images/banner.png)
 
-[![npm version](https://badge.fury.io/js/image-handler-mcp.svg)](https://www.npmjs.com/package/image-handler-mcp)
+[![npm version](https://badge.fury.io/js/sharp-mcp.svg)](https://www.npmjs.com/package/sharp-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -25,22 +25,22 @@ MCP (Model Context Protocol) server for image session management and processing.
 ### NPM
 
 ```bash
-npm install -g image-handler-mcp
+npm install -g sharp-mcp
 ```
 
 ### Smithery
 
-To install Image Handler MCP for any client automatically via [Smithery](https://smithery.ai):
+To install Sharp MCP for any client automatically via [Smithery](https://smithery.ai):
 
 ```bash
-npx -y @smithery/cli@latest install image-handler-mcp --client <CLIENT_NAME>
+npx -y @smithery/cli@latest install sharp-mcp --client <CLIENT_NAME>
 ```
 
 Available clients: `cursor`, `claude`, `vscode`, `windsurf`, `cline`, `zed`, etc.
 
 ## MCP Client Integration
 
-Image Handler MCP can be integrated with various AI coding assistants and IDEs that support the Model Context Protocol (MCP).
+Sharp MCP can be integrated with various AI coding assistants and IDEs that support the Model Context Protocol (MCP).
 
 ### Requirements
 
@@ -57,9 +57,9 @@ Add the following configuration to your `~/.cursor/mcp.json` file:
 ```json
 {
   "mcpServers": {
-    "image-handler": {
+    "sharp": {
       "command": "npx",
-      "args": ["-y", "image-handler-mcp"]
+      "args": ["-y", "sharp-mcp"]
     }
   }
 }
@@ -73,7 +73,7 @@ Add the following configuration to your `~/.cursor/mcp.json` file:
 Run this command:
 
 ```sh
-claude mcp add image-handler -- npx -y image-handler-mcp
+claude mcp add sharp -- npx -y sharp-mcp
 ```
 
 </details>
@@ -86,10 +86,10 @@ Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.vi
 ```json
 "mcp": {
   "servers": {
-    "image-handler": {
+    "sharp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "image-handler-mcp"]
+      "args": ["-y", "sharp-mcp"]
     }
   }
 }
@@ -105,9 +105,9 @@ Add this to your Windsurf MCP config file:
 ```json
 {
   "mcpServers": {
-    "image-handler": {
+    "sharp": {
       "command": "npx",
-      "args": ["-y", "image-handler-mcp"]
+      "args": ["-y", "sharp-mcp"]
     }
   }
 }
@@ -123,9 +123,9 @@ Open Claude Desktop developer settings and edit your `claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "image-handler": {
+    "sharp": {
       "command": "npx",
-      "args": ["-y", "image-handler-mcp"]
+      "args": ["-y", "sharp-mcp"]
     }
   }
 }
@@ -263,10 +263,10 @@ Run the server directly:
 
 ```bash
 # Using stdio transport (default)
-image-handler-mcp
+sharp-mcp
 
 # Using HTTP transport
-image-handler-mcp --transport http --port 5000
+sharp-mcp --transport http --port 5000
 ```
 
 **CLI Options:**
