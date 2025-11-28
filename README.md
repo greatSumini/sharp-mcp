@@ -312,6 +312,12 @@ Removes the background from an image by sampling edge colors and using flood-fil
 - **Sobel Edge Detection**: Protects subject boundaries from being eroded
 - **Gaussian Feathering**: Applies smooth anti-aliasing at background/foreground boundaries
 
+**Before & After:**
+
+| Before | After |
+|--------|-------|
+| ![Before](./images/background-before.png) | ![After](./images/background-after.png) |
+
 ## Usage Examples
 
 ### Example 1: Analyze an image

@@ -1,6 +1,6 @@
 {
   "name": "sharp-mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "MCP server for image session management and processing",
   "main": "dist/server.js",
   "type": "module",
@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/server.js",
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
