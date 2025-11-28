@@ -1,84 +1,46 @@
-# Nanobanana API MCP
+# Image Handler MCP
 
-<p align="center">
-  <img src="./public/logo.png" alt="Nanobanana Logo" width="200">
-</p>
-
-[![npm version](https://badge.fury.io/js/nanobanana-api-mcp.svg)](https://www.npmjs.com/package/nanobanana-api-mcp)
+[![npm version](https://badge.fury.io/js/image-handler-mcp.svg)](https://www.npmjs.com/package/image-handler-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
 
-MCP (Model Context Protocol) server for generating and editing images using Google Gemini API.
+MCP (Model Context Protocol) server for image session management and processing. Provides tools for storing images in sessions and extracting image metadata and colors.
 
 ## Features
 
-- **generate_image**: Generate images from text prompts using Google Gemini AI
-- **edit_image**: Edit existing images based on text descriptions
-- Support for reference images to guide generation/editing
-- Multiple model options (Pro and Normal)
+- **create_session**: Store base64 images in memory sessions with unique IDs
+- **list_session**: List all active image sessions
+- **get_image_size**: Get image dimensions and MIME type
+- **pick_color**: Extract average color from a specified region
 - Built with TypeScript for type safety
-- Flexible configuration via CLI arguments or environment variables
-
-### Image Generation Example
-
-<p align="center">
-  <img src="./public/demo-generate.png" alt="Image Generation Demo" width="600">
-  <br>
-  <em>Generated image: "A serene mountain landscape at sunset with a lake in the foreground"</em>
-</p>
+- Uses [sharp](https://sharp.pixelplumbing.com/) for high-performance image processing
 
 ## Installation
 
 ### NPM
 
 ```bash
-npm install -g nanobanana-api-mcp
+npm install -g image-handler-mcp
 ```
 
 ### Smithery
 
-To install Nanobanana MCP Server for any client automatically via [Smithery](https://smithery.ai):
+To install Image Handler MCP for any client automatically via [Smithery](https://smithery.ai):
 
 ```bash
-npx -y @smithery/cli@latest install nanobanana-api-mcp --client <CLIENT_NAME>
+npx -y @smithery/cli@latest install image-handler-mcp --client <CLIENT_NAME>
 ```
 
 Available clients: `cursor`, `claude`, `vscode`, `windsurf`, `cline`, `zed`, etc.
 
-**Example for Cursor:**
-
-```bash
-npx -y @smithery/cli@latest install nanobanana-api-mcp --client cursor
-```
-
-This will automatically configure the MCP server in your chosen client.
-
-## Prerequisites
-
-You need a Google API key with access to Gemini models. Get your API key from [Google AI Studio](https://aistudio.google.com/api-keys).
-
-You can provide the API key via CLI argument:
-
-```bash
-nanobanana-api-mcp --apiKey "your-api-key-here"
-```
-
-Or set it as an environment variable:
-
-```bash
-export GOOGLE_API_KEY="your-api-key-here"
-nanobanana-api-mcp
-```
-
 ## MCP Client Integration
 
-Nanobanana MCP can be integrated with various AI coding assistants and IDEs that support the Model Context Protocol (MCP).
+Image Handler MCP can be integrated with various AI coding assistants and IDEs that support the Model Context Protocol (MCP).
 
 ### Requirements
 
 - Node.js >= v18.0.0
-- Google API key with Gemini access
 - An MCP-compatible client (Cursor, Claude Code, VS Code, Windsurf, etc.)
 
 <details>
@@ -91,29 +53,9 @@ Add the following configuration to your `~/.cursor/mcp.json` file:
 ```json
 {
   "mcpServers": {
-    "nanobanana": {
+    "image-handler": {
       "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
-    }
-  }
-}
-```
-
-Optionally, you can fix the model to use for all operations:
-
-```json
-{
-  "mcpServers": {
-    "nanobanana": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "nanobanana-api-mcp",
-        "--apiKey",
-        "your-api-key-here",
-        "--model",
-        "pro"
-      ]
+      "args": ["-y", "image-handler-mcp"]
     }
   }
 }
@@ -124,16 +66,10 @@ Optionally, you can fix the model to use for all operations:
 <details>
 <summary><b>Install in Claude Code</b></summary>
 
-Run this command with your API key:
+Run this command:
 
 ```sh
-claude mcp add nanobanana -- npx -y nanobanana-api-mcp --apiKey your-api-key-here
-```
-
-Or with a fixed model:
-
-```sh
-claude mcp add nanobanana -- npx -y nanobanana-api-mcp --apiKey your-api-key-here --model pro
+claude mcp add image-handler -- npx -y image-handler-mcp
 ```
 
 </details>
@@ -146,10 +82,10 @@ Add this to your VS Code MCP config file. See [VS Code MCP docs](https://code.vi
 ```json
 "mcp": {
   "servers": {
-    "nanobanana": {
+    "image-handler": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
+      "args": ["-y", "image-handler-mcp"]
     }
   }
 }
@@ -165,31 +101,9 @@ Add this to your Windsurf MCP config file:
 ```json
 {
   "mcpServers": {
-    "nanobanana": {
+    "image-handler": {
       "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><b>Install in Cline</b></summary>
-
-1. Open **Cline**
-2. Click the hamburger menu icon (☰) to enter the **MCP Servers** section
-3. Choose **Remote Servers** tab
-4. Click the **Edit Configuration** button
-5. Add nanobanana to `mcpServers`:
-
-```json
-{
-  "mcpServers": {
-    "nanobanana": {
-      "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
+      "args": ["-y", "image-handler-mcp"]
     }
   }
 }
@@ -205,46 +119,9 @@ Open Claude Desktop developer settings and edit your `claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "nanobanana": {
+    "image-handler": {
       "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><b>Install in Zed</b></summary>
-
-Add this to your Zed `settings.json`:
-
-```json
-{
-  "context_servers": {
-    "nanobanana": {
-      "source": "custom",
-      "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><b>Install in Roo Code</b></summary>
-
-Add this to your Roo Code MCP configuration file:
-
-```json
-{
-  "mcpServers": {
-    "nanobanana": {
-      "command": "npx",
-      "args": ["-y", "nanobanana-api-mcp", "--apiKey", "your-api-key-here"]
+      "args": ["-y", "image-handler-mcp"]
     }
   }
 }
@@ -254,160 +131,126 @@ Add this to your Roo Code MCP configuration file:
 
 ## Available Tools
 
-Nanobanana MCP provides the following tools that can be used by LLMs:
+### create_session
 
-### generate_image
-
-Generates an image based on a text prompt using Google Gemini API.
+Creates a new session with the provided image payload and returns a unique session ID.
 
 **Parameters:**
 
-- `prompt` (string, required): Text description of the image to generate
-- `output_path` (string, optional): Absolute path where the generated image will be saved. If not provided, returns base64 encoded image data instead
-- `model` (enum, optional): Model to use - "pro" (default) or "normal" (not shown if --model is provided via CLI)
-  - `pro`: gemini-3-pro-image-preview (higher quality)
-  - `normal`: gemini-2.5-flash-image (faster)
-- `reference_images_path` (string[], optional): Array of absolute reference image paths to guide the generation
-- `aspect_ratio` (enum, optional): Aspect ratio for the image - "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9" (default), "21:9"
+- `image_payload` (string, required): Base64 encoded image data
+- `description` (string, optional): Optional description for the image
 
-**Example (save to file):**
+**Returns:**
+
+```json
+{ "sessionId": "img_abc123xyz" }
+```
+
+**Example:**
 
 ```json
 {
-  "prompt": "A serene mountain landscape at sunset with a lake in the foreground",
-  "output_path": "/absolute/path/to/generated_image.png",
-  "model": "pro",
-  "aspect_ratio": "16:9"
+  "image_payload": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "description": "Screenshot of the homepage"
 }
 ```
 
-**Example (return base64):**
+### list_session
+
+Lists all active sessions with their session IDs, image payloads, and descriptions.
+
+**Parameters:** None
+
+**Returns:**
 
 ```json
-{
-  "prompt": "A serene mountain landscape at sunset with a lake in the foreground",
-  "model": "pro",
-  "aspect_ratio": "16:9"
-}
+[
+  {
+    "sessionId": "img_abc123xyz",
+    "image_payload": "iVBORw0KGgoAAAANSUhEUgAA...",
+    "description": "Screenshot of the homepage"
+  }
+]
 ```
 
-**With reference images:**
+### get_image_size
 
-```json
-{
-  "prompt": "An office group photo of these people, they are making funny faces",
-  "output_path": "/absolute/path/to/group_photo.png",
-  "model": "pro",
-  "reference_images_path": [
-    "/absolute/path/to/person1.jpg",
-    "/absolute/path/to/person2.jpg"
-  ]
-}
-```
-
-### edit_image
-
-Edits an existing image based on a text prompt using Google Gemini API.
+Gets the dimensions and MIME type of an image stored in a session.
 
 **Parameters:**
 
-- `path` (string, optional): Absolute path to the image to edit. Either `path` or `image_base64` must be provided
-- `image_base64` (string, optional): Base64 encoded image data to edit. Either `path` or `image_base64` must be provided
-- `mime_type` (string, optional): MIME type of the base64 image (e.g., "image/png", "image/jpeg"). Required when using `image_base64`
-- `prompt` (string, required): Text description of the edits to make
-- `output_path` (string, optional): Absolute path where the edited image will be saved. If not provided:
-  - When using `path`: defaults to overwriting the input file
-  - When using `image_base64`: returns base64 encoded image data instead
-- `model` (enum, optional): Model to use - "pro" (default) or "normal" (not shown if --model is provided via CLI)
-- `reference_images_path` (string[], optional): Array of absolute additional reference image paths to guide the editing
-- `aspect_ratio` (enum, optional): Aspect ratio for the image - "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9" (default), "21:9"
+- `sessionId` (string, required): The session ID returned from create_session
 
-**Example (path input, save to file):**
+**Returns:**
 
 ```json
 {
-  "path": "/absolute/path/to/original_image.png",
-  "prompt": "Add a blue sky with fluffy clouds in the background",
-  "output_path": "/absolute/path/to/edited_image.png",
-  "model": "pro"
+  "width": 1920,
+  "height": 1080,
+  "mimeType": "image/png"
 }
 ```
 
-**Example (path input, overwrite original):**
+**Error Response (invalid session):**
+
+```
+Invalid or non-existent session ID. Please call create_session first to obtain a valid session ID.
+```
+
+### pick_color
+
+Picks the average color from a square region centered at the specified coordinates.
+
+**Parameters:**
+
+- `sessionId` (string, required): The session ID returned from create_session
+- `x` (number, required): X coordinate of the center point
+- `y` (number, required): Y coordinate of the center point
+- `radius` (number, optional, default: 5): Radius of the sampling area. The sampling area will be a square of (radius × 2) size.
+
+**Returns:**
 
 ```json
 {
-  "path": "/absolute/path/to/image.png",
-  "prompt": "Make the colors more vibrant and increase contrast"
+  "r": 255,
+  "g": 128,
+  "b": 64,
+  "hex": "#FF8040"
 }
 ```
 
-**Example (base64 input, return base64):**
+**Error Response (out of bounds):**
 
-```json
-{
-  "image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "mime_type": "image/png",
-  "prompt": "Add a sunset filter to this image"
-}
 ```
-
-**Example (base64 input, save to file):**
-
-```json
-{
-  "image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "mime_type": "image/png",
-  "prompt": "Add a sunset filter to this image",
-  "output_path": "/absolute/path/to/output.png"
-}
-```
-
-**With reference images:**
-
-```json
-{
-  "path": "/absolute/path/to/portrait.jpg",
-  "prompt": "Apply the style and lighting from these reference images",
-  "output_path": "/absolute/path/to/styled_portrait.jpg",
-  "reference_images_path": [
-    "/absolute/path/to/style_ref1.jpg",
-    "/absolute/path/to/style_ref2.jpg"
-  ]
-}
+Coordinates (2000, 500) exceed image bounds (1920x1080).
 ```
 
 ## Usage Examples
 
-### Example 1: Generate a simple image
+### Example 1: Analyze an image
 
 **In Cursor/Claude Code:**
 
 ```
-Generate an image of a futuristic cityscape with flying cars and save it to ./cityscape.png
+Read the screenshot at ./screenshot.png, create a session with it,
+and tell me its dimensions.
 ```
 
-**Result:** The above command would generate an image similar to our demo:
-
-<p align="center">
-  <img src="./public/demo-generate.png" alt="Generated Landscape" width="400">
-</p>
-
-### Example 2: Edit an existing image
+### Example 2: Extract colors from UI
 
 **In Cursor/Claude Code:**
 
 ```
-Edit the image at ./photo.jpg and add a sunset sky background, save it as ./photo_sunset.jpg
+I have a UI screenshot. Create a session with it and pick the colors
+at these coordinates: (100, 50), (200, 150), (300, 200).
 ```
 
-### Example 3: Generate with reference images
+### Example 3: Get image metadata
 
 **In Cursor/Claude Code:**
 
 ```
-Create an office group photo using the face images at ./face1.jpg, ./face2.jpg, and ./face3.jpg.
-Make them look like they're at a fun team meeting. Save to ./team_photo.png
+Load ./logo.png into a session and get its size and format.
 ```
 
 ## Command Line Usage
@@ -415,24 +258,15 @@ Make them look like they're at a fun team meeting. Save to ./team_photo.png
 Run the server directly:
 
 ```bash
-# Using CLI argument for API key (recommended)
-nanobanana-api-mcp --apiKey "your-api-key-here"
-
-# Using environment variable for API key
-export GOOGLE_API_KEY="your-api-key-here"
-nanobanana-api-mcp
-
-# Fix model for all operations
-nanobanana-api-mcp --apiKey "your-api-key-here" --model pro
+# Using stdio transport (default)
+image-handler-mcp
 
 # Using HTTP transport
-nanobanana-api-mcp --apiKey "your-api-key-here" --transport http --port 5000
+image-handler-mcp --transport http --port 5000
 ```
 
 **CLI Options:**
 
-- `--apiKey <key>`: Google API key for image generation (can also use GOOGLE_API_KEY env var)
-- `--model <pro|normal>`: Fix the model for all operations (optional, hides model parameter from tools)
 - `--transport <stdio|http>`: Transport type (default: stdio)
 - `--port <number>`: Port for HTTP transport (default: 5000)
 
@@ -462,9 +296,16 @@ npm run lint
 
 The project follows a modular architecture:
 
-- **services/**: Image generation and editing service using Google Gemini API
-- **tools/**: MCP tool implementations (generate_image, edit_image)
-- **types/**: TypeScript type definitions
+- **services/**: Session storage and image processing services
+  - `session-store.ts`: In-memory session management
+  - `image-processor.ts`: Sharp-based image analysis
+- **tools/**: MCP tool implementations
+  - `create-session.ts`: Session creation
+  - `list-session.ts`: Session listing
+  - `get-image-size.ts`: Image metadata extraction
+  - `pick-color.ts`: Color extraction
+- **utils/**: Shared utilities
+  - `validation.ts`: Session ID validation
 - **server.ts**: Main MCP server setup and configuration
 
 ## Supported Image Formats
@@ -473,6 +314,8 @@ The project follows a modular architecture:
 - PNG (.png)
 - GIF (.gif)
 - WebP (.webp)
+- TIFF (.tiff)
+- AVIF (.avif)
 
 ## License
 
@@ -485,7 +328,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Author
 
 choesumin
-
-## Acknowledgments
-
-This project uses the [Google Generative AI SDK](https://www.npmjs.com/package/@google/genai) for image generation and editing capabilities.
