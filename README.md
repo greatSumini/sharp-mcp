@@ -1,5 +1,7 @@
 # Image Handler MCP
 
+![Image Handler MCP Banner](./images/banner.png)
+
 [![npm version](https://badge.fury.io/js/image-handler-mcp.svg)](https://www.npmjs.com/package/image-handler-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -8,6 +10,8 @@
 MCP (Model Context Protocol) server for image session management and processing. Provides tools for storing images in sessions and extracting image metadata and colors.
 
 ## Features
+
+![Image Processing Workflow](./images/workflow.png)
 
 - **create_session**: Store base64 images in memory sessions with unique IDs
 - **list_session**: List all active image sessions
@@ -293,6 +297,8 @@ npm run lint
 ```
 
 ## Architecture
+
+![Architecture Diagram](./images/architecture.png)
 
 The project follows a modular architecture:
 
