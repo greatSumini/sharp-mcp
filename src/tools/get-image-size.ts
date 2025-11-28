@@ -11,7 +11,7 @@ type InputType = z.infer<typeof inputSchema>;
 
 export function createGetImageSizeTool() {
   return {
-    name: "get_image_size",
+    name: "get_dimensions",
     description:
       "Gets the dimensions and MIME type of an image stored in a session. Returns width, height, and mimeType.",
     inputSchema,

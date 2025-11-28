@@ -10,6 +10,7 @@ import { createListSessionTool } from "./tools/list-session.js";
 import { createGetImageSizeTool } from "./tools/get-image-size.js";
 import { createPickColorTool } from "./tools/pick-color.js";
 import { createRemoveBackgroundTool } from "./tools/remove-background.js";
+import { createCreateSessionByPathTool } from "./tools/create-session-by-path.js";
 
 /** Default HTTP server port */
 const DEFAULT_PORT = 5000;
@@ -65,6 +66,7 @@ function createServerInstance() {
   const getImageSizeTool = createGetImageSizeTool();
   const pickColorTool = createPickColorTool();
   const removeBackgroundTool = createRemoveBackgroundTool();
+  const createSessionByPathTool = createCreateSessionByPathTool();
 
   server.registerTool(
     createSessionTool.name,
@@ -91,7 +93,7 @@ function createServerInstance() {
   server.registerTool(
     getImageSizeTool.name,
     {
-      title: "Get Image Size",
+      title: "Get Dimensions",
       description: getImageSizeTool.description,
       inputSchema: getImageSizeTool.inputSchema.shape,
       outputSchema: undefined,
@@ -119,6 +121,17 @@ function createServerInstance() {
       outputSchema: undefined,
     },
     removeBackgroundTool.handler
+  );
+
+  server.registerTool(
+    createSessionByPathTool.name,
+    {
+      title: "Create Session By Path",
+      description: createSessionByPathTool.description,
+      inputSchema: createSessionByPathTool.inputSchema.shape,
+      outputSchema: undefined,
+    },
+    createSessionByPathTool.handler
   );
 
   return server;

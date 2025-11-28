@@ -14,9 +14,11 @@ MCP (Model Context Protocol) server for image session management and processing.
 ![Image Processing Workflow](./images/workflow.png)
 
 - **create_session**: Store base64 images in memory sessions with unique IDs
+- **create_session_by_path**: Create sessions from image file paths (auto base64 conversion)
 - **list_session**: List all active image sessions
-- **get_image_size**: Get image dimensions and MIME type
+- **get_dimensions**: Get image dimensions and MIME type
 - **pick_color**: Extract average color from a specified region
+- **remove_background**: Remove background from images using flood-fill algorithm
 - Built with TypeScript for type safety
 - Uses [sharp](https://sharp.pixelplumbing.com/) for high-performance image processing
 
@@ -159,6 +161,40 @@ Creates a new session with the provided image payload and returns a unique sessi
 }
 ```
 
+### create_session_by_path
+
+Creates a new session by reading an image from the specified absolute file path. Automatically converts the file to base64 and validates that it's a valid image.
+
+**Parameters:**
+
+- `path` (string, required): Absolute path to the image file
+- `description` (string, optional): Optional description for the image
+
+**Returns:**
+
+```json
+{
+  "sessionId": "img_abc123xyz",
+  "source_path": "/path/to/image.png",
+  "file_size": 46849
+}
+```
+
+**Example:**
+
+```json
+{
+  "path": "/Users/username/images/screenshot.png",
+  "description": "Homepage screenshot"
+}
+```
+
+**Error Responses:**
+
+- Relative path: `Path must be absolute. Received relative path: "./image.png"`
+- File not found: `File not found: "/path/to/image.png"`
+- Invalid image: `Invalid or corrupted image file: "/path/to/file.txt"`
+
 ### list_session
 
 Lists all active sessions with their session IDs, image payloads, and descriptions.
@@ -177,13 +213,13 @@ Lists all active sessions with their session IDs, image payloads, and descriptio
 ]
 ```
 
-### get_image_size
+### get_dimensions
 
 Gets the dimensions and MIME type of an image stored in a session.
 
 **Parameters:**
 
-- `sessionId` (string, required): The session ID returned from create_session
+- `sessionId` (string, required): The session ID returned from create_session or create_session_by_path
 
 **Returns:**
 
@@ -229,6 +265,53 @@ Picks the average color from a square region centered at the specified coordinat
 Coordinates (2000, 500) exceed image bounds (1920x1080).
 ```
 
+### remove_background
+
+Removes the background from an image by sampling edge colors and using flood-fill algorithm. Returns PNG with transparency.
+
+**Parameters:**
+
+- `sessionId` (string, required): The session ID returned from create_session
+- `output_path` (string, optional): Absolute path to save the output PNG file. If not provided, returns base64 payload.
+- `tolerance` (number, optional, default: 30): Color tolerance for background matching (0-255). Higher values remove more similar colors.
+- `edge_feathering` (number, optional, default: 2): Anti-aliasing radius for smoother edges (0-5).
+
+**Returns (without output_path):**
+
+```json
+{
+  "image_payload": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "mime_type": "image/png",
+  "removed_pixel_count": 125000
+}
+```
+
+**Returns (with output_path):**
+
+```json
+{
+  "path": "/path/to/output.png",
+  "removed_pixel_count": 125000
+}
+```
+
+**Example:**
+
+```json
+{
+  "sessionId": "img_abc123xyz",
+  "tolerance": 40,
+  "edge_feathering": 3
+}
+```
+
+**Algorithm Features:**
+
+- **Edge Sampling**: Samples colors from all four edges to accurately identify background color
+- **Adaptive Tolerance**: Automatically adjusts tolerance based on background color variance
+- **Sobel Edge Detection**: Protects subject boundaries from being eroded
+- **Gaussian Feathering**: Applies smooth anti-aliasing at background/foreground boundaries
+
 ## Usage Examples
 
 ### Example 1: Analyze an image
@@ -255,6 +338,15 @@ at these coordinates: (100, 50), (200, 150), (300, 200).
 
 ```
 Load ./logo.png into a session and get its size and format.
+```
+
+### Example 4: Remove background from image
+
+**In Cursor/Claude Code:**
+
+```
+Create a session with ./product-photo.jpg and remove the background.
+Save the result to ./product-transparent.png
 ```
 
 ## Command Line Usage
@@ -306,10 +398,12 @@ The project follows a modular architecture:
   - `session-store.ts`: In-memory session management
   - `image-processor.ts`: Sharp-based image analysis
 - **tools/**: MCP tool implementations
-  - `create-session.ts`: Session creation
+  - `create-session.ts`: Session creation from base64
+  - `create-session-by-path.ts`: Session creation from file path
   - `list-session.ts`: Session listing
-  - `get-image-size.ts`: Image metadata extraction
+  - `get-image-size.ts`: Image dimensions extraction (get_dimensions)
   - `pick-color.ts`: Color extraction
+  - `remove-background.ts`: Background removal with flood-fill
 - **utils/**: Shared utilities
   - `validation.ts`: Session ID validation
 - **server.ts**: Main MCP server setup and configuration
