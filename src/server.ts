@@ -55,7 +55,7 @@ const CLI_PORT = (() => {
 function createServerInstance() {
   const server = new McpServer({
     name: "image-handler-mcp",
-    version: "0.0.0",
+    version: "0.1.0",
   });
 
   // Create and register tools
