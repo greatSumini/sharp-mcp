@@ -174,6 +174,80 @@ export async function extractRegion(
   };
 }
 
+export type CompressionFormat = "jpeg" | "png" | "webp";
+
+export interface CompressionResult {
+  buffer: Buffer;
+  base64: string;
+  mimeType: string;
+  format: string;
+  originalSize: number;
+  compressedSize: number;
+}
+
+export async function compressImage(
+  base64: string,
+  format?: CompressionFormat,
+  quality: number = 80
+): Promise<CompressionResult> {
+  const buffer = base64ToBuffer(base64);
+  const image = sharp(buffer);
+  const metadata = await image.metadata();
+
+  if (!metadata.width || !metadata.height) {
+    throw new Error("Unable to determine image dimensions");
+  }
+
+  // Determine output format: use specified format or keep original
+  let outputFormat: CompressionFormat;
+  if (format) {
+    outputFormat = format;
+  } else {
+    // Map original format to supported compression format
+    const originalFormat = metadata.format || "jpeg";
+    if (originalFormat === "png") {
+      outputFormat = "png";
+    } else if (originalFormat === "webp") {
+      outputFormat = "webp";
+    } else {
+      // Default to JPEG for unsupported formats (gif, tiff, avif, etc.)
+      outputFormat = "jpeg";
+    }
+  }
+
+  let resultBuffer: Buffer;
+
+  switch (outputFormat) {
+    case "jpeg":
+      resultBuffer = await image.jpeg({ quality }).toBuffer();
+      break;
+    case "png": {
+      // Convert quality (1-100) to compressionLevel (0-9)
+      // quality 100 → compressionLevel 0 (minimum compression)
+      // quality 0 → compressionLevel 9 (maximum compression)
+      const compressionLevel = Math.round((100 - quality) / 100 * 9);
+      resultBuffer = await image.png({ compressionLevel }).toBuffer();
+      break;
+    }
+    case "webp":
+      resultBuffer = await image.webp({ quality }).toBuffer();
+      break;
+    default:
+      throw new Error(`Unsupported format: ${outputFormat}`);
+  }
+
+  const mimeType = formatToMimeType[outputFormat] || "image/jpeg";
+
+  return {
+    buffer: resultBuffer,
+    base64: resultBuffer.toString("base64"),
+    mimeType,
+    format: outputFormat,
+    originalSize: buffer.length,
+    compressedSize: resultBuffer.length,
+  };
+}
+
 export async function removeBackground(base64: string): Promise<RemoveBackgroundResult> {
   const buffer = base64ToBuffer(base64);
 

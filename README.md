@@ -20,6 +20,7 @@ MCP (Model Context Protocol) server for image session management and processing.
 - **pick_color**: Extract average color from a specified region
 - **remove_background**: Remove background from images using ML-based segmentation
 - **extract_region**: Crop a rectangular region from an image
+- **compress_image**: Compress images with format conversion (JPEG, PNG, WebP)
 - Built with TypeScript for type safety
 - Uses [sharp](https://sharp.pixelplumbing.com/) for high-performance image processing
 
@@ -358,6 +359,56 @@ Extracts (crops) a rectangular region from an image stored in a session. Returns
 - Invalid coordinates: `Invalid coordinates: x and y must be non-negative values.`
 - Invalid dimensions: `Invalid dimensions: width and height must be positive values.`
 
+### compress_image
+
+Compresses an image with specified format and quality. Supports JPEG, PNG, and WebP formats. Returns the compressed image as a file or base64 payload.
+
+**Parameters:**
+
+- `sessionId` (string, required): The session ID returned from create_session
+- `format` (string, optional): Output format: 'jpeg', 'png', or 'webp'. If not specified, keeps the original format.
+- `quality` (number, optional, default: 80): Compression quality (1-100). Higher values mean better quality but larger file size.
+- `output_path` (string, optional): Absolute path to save the compressed image. If not provided, returns base64 payload.
+
+**Returns (without output_path):**
+
+```json
+{
+  "base64": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "mimeType": "image/jpeg",
+  "format": "jpeg",
+  "originalSize": 245632,
+  "compressedSize": 98234,
+  "compressionRatio": "60.01%"
+}
+```
+
+**Returns (with output_path):**
+
+```json
+{
+  "success": true,
+  "path": "/path/to/compressed.jpg",
+  "format": "jpeg",
+  "originalSize": 245632,
+  "compressedSize": 98234,
+  "compressionRatio": "60.01%"
+}
+```
+
+**Example:**
+
+```json
+{
+  "sessionId": "img_abc123xyz",
+  "format": "webp",
+  "quality": 75,
+  "output_path": "/path/to/output.webp"
+}
+```
+
+**Note:** For PNG format, the quality parameter is converted to compression level (quality 100 → level 0, quality 0 → level 9).
+
 ## Usage Examples
 
 ### Example 1: Analyze an image
@@ -393,6 +444,15 @@ Load ./logo.png into a session and get its size and format.
 ```
 Create a session with ./product-photo.jpg and remove the background.
 Save the result to ./product-transparent.png
+```
+
+### Example 5: Compress and convert image format
+
+**In Cursor/Claude Code:**
+
+```
+Load ./large-image.png into a session and compress it to WebP format
+with 75% quality. Save to ./optimized.webp
 ```
 
 ## Command Line Usage
@@ -451,6 +511,7 @@ The project follows a modular architecture:
   - `pick-color.ts`: Color extraction
   - `remove-background.ts`: ML-based background removal
   - `extract-region.ts`: Image cropping
+  - `compress-image.ts`: Image compression
 - **utils/**: Shared utilities
   - `validation.ts`: Session ID validation
 - **server.ts**: Main MCP server setup and configuration

@@ -12,6 +12,7 @@ import { createPickColorTool } from "./tools/pick-color.js";
 import { createRemoveBackgroundTool } from "./tools/remove-background.js";
 import { createCreateSessionByPathTool } from "./tools/create-session-by-path.js";
 import { createExtractRegionTool } from "./tools/extract-region.js";
+import { createCompressImageTool } from "./tools/compress-image.js";
 
 /** Default HTTP server port */
 const DEFAULT_PORT = 5000;
@@ -58,7 +59,7 @@ const CLI_PORT = (() => {
 function createServerInstance() {
   const server = new McpServer({
     name: "sharp-mcp",
-    version: "0.2.5",
+    version: "0.2.6",
   });
 
   // Create and register tools
@@ -69,6 +70,7 @@ function createServerInstance() {
   const removeBackgroundTool = createRemoveBackgroundTool();
   const createSessionByPathTool = createCreateSessionByPathTool();
   const extractRegionTool = createExtractRegionTool();
+  const compressImageTool = createCompressImageTool();
 
   server.registerTool(
     createSessionTool.name,
@@ -145,6 +147,17 @@ function createServerInstance() {
       outputSchema: undefined,
     },
     extractRegionTool.handler
+  );
+
+  server.registerTool(
+    compressImageTool.name,
+    {
+      title: "Compress Image",
+      description: compressImageTool.description,
+      inputSchema: compressImageTool.inputSchema.shape,
+      outputSchema: undefined,
+    },
+    compressImageTool.handler
   );
 
   return server;

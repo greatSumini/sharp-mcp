@@ -7,6 +7,7 @@ import { createListSessionTool } from "../../src/tools/list-session.js";
 import { createGetImageSizeTool } from "../../src/tools/get-image-size.js";
 import { createPickColorTool } from "../../src/tools/pick-color.js";
 import { createRemoveBackgroundTool } from "../../src/tools/remove-background.js";
+import { createCompressImageTool } from "../../src/tools/compress-image.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -354,6 +355,136 @@ describe("Image Handler MCP Tools Integration Tests", () => {
       const result = await removeBackgroundTool.handler({
         sessionId,
         output_path: "/non/existent/directory/output.png",
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("Directory does not exist");
+    });
+  });
+
+  describe("compress_image", () => {
+    const createSessionTool = createCreateSessionTool();
+    const compressImageTool = createCompressImageTool();
+
+    let sessionId: string;
+
+    beforeEach(async () => {
+      const createResult = await createSessionTool.handler({
+        image_payload: testImageBase64,
+      });
+      sessionId = JSON.parse(createResult.content[0].text).sessionId;
+    });
+
+    it("should compress image with default settings (keep original format)", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.base64).toBeDefined();
+      expect(response.mimeType).toBe("image/jpeg"); // Original format
+      expect(response.format).toBe("jpeg");
+      expect(response.originalSize).toBeGreaterThan(0);
+      expect(response.compressedSize).toBeGreaterThan(0);
+      expect(response.compressionRatio).toMatch(/^-?\d+\.\d+%$/);
+    });
+
+    it("should compress image to JPEG format", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+        format: "jpeg",
+        quality: 60,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.mimeType).toBe("image/jpeg");
+      expect(response.format).toBe("jpeg");
+    });
+
+    it("should compress image to PNG format", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+        format: "png",
+        quality: 80,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.mimeType).toBe("image/png");
+      expect(response.format).toBe("png");
+    });
+
+    it("should compress image to WebP format", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+        format: "webp",
+        quality: 75,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.mimeType).toBe("image/webp");
+      expect(response.format).toBe("webp");
+    });
+
+    it("should save compressed image to file when output_path provided", async () => {
+      const outputPath = path.resolve(__dirname, "../../temp/compressed-test.jpg");
+      const tempDir = path.dirname(outputPath);
+
+      // Ensure temp directory exists
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const result = await compressImageTool.handler({
+        sessionId,
+        format: "jpeg",
+        quality: 70,
+        output_path: outputPath,
+      });
+
+      expect(result.isError).toBeUndefined();
+
+      const response = JSON.parse(result.content[0].text);
+      expect(response.success).toBe(true);
+      expect(response.path).toBe(outputPath);
+      expect(response.format).toBe("jpeg");
+      expect(response.compressionRatio).toBeDefined();
+      expect(fs.existsSync(outputPath)).toBe(true);
+
+      // Cleanup
+      fs.unlinkSync(outputPath);
+    });
+
+    it("should return error for invalid sessionId", async () => {
+      const result = await compressImageTool.handler({
+        sessionId: "invalid_id",
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("create_session");
+    });
+
+    it("should return error for non-absolute output_path", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+        output_path: "relative/path/output.jpg",
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("absolute");
+    });
+
+    it("should return error for non-existent directory in output_path", async () => {
+      const result = await compressImageTool.handler({
+        sessionId,
+        output_path: "/non/existent/directory/output.jpg",
       });
 
       expect(result.isError).toBe(true);
