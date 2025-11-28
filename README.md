@@ -137,6 +137,19 @@ Open Claude Desktop developer settings and edit your `claude_desktop_config.json
 
 </details>
 
+<details>
+<summary><b>Install in OpenAI Codex</b></summary>
+
+Add this to your `codex.toml` or `~/.codex/config.toml` file:
+
+```toml
+[mcp_servers.sharp]
+command = "npx"
+args = ["-y", "sharp-mcp"]
+```
+
+</details>
+
 ## Available Tools
 
 ### create_session
