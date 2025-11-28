@@ -11,6 +11,7 @@ import { createGetImageSizeTool } from "./tools/get-image-size.js";
 import { createPickColorTool } from "./tools/pick-color.js";
 import { createRemoveBackgroundTool } from "./tools/remove-background.js";
 import { createCreateSessionByPathTool } from "./tools/create-session-by-path.js";
+import { createExtractRegionTool } from "./tools/extract-region.js";
 
 /** Default HTTP server port */
 const DEFAULT_PORT = 5000;
@@ -57,7 +58,7 @@ const CLI_PORT = (() => {
 function createServerInstance() {
   const server = new McpServer({
     name: "sharp-mcp",
-    version: "0.2.2",
+    version: "0.2.5",
   });
 
   // Create and register tools
@@ -67,6 +68,7 @@ function createServerInstance() {
   const pickColorTool = createPickColorTool();
   const removeBackgroundTool = createRemoveBackgroundTool();
   const createSessionByPathTool = createCreateSessionByPathTool();
+  const extractRegionTool = createExtractRegionTool();
 
   server.registerTool(
     createSessionTool.name,
@@ -132,6 +134,17 @@ function createServerInstance() {
       outputSchema: undefined,
     },
     createSessionByPathTool.handler
+  );
+
+  server.registerTool(
+    extractRegionTool.name,
+    {
+      title: "Extract Region",
+      description: extractRegionTool.description,
+      inputSchema: extractRegionTool.inputSchema.shape,
+      outputSchema: undefined,
+    },
+    extractRegionTool.handler
   );
 
   return server;

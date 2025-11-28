@@ -130,6 +130,50 @@ export async function getAverageColor(
   };
 }
 
+export interface ExtractRegionResult {
+  buffer: Buffer;
+  base64: string;
+  mimeType: string;
+}
+
+export async function extractRegion(
+  base64: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Promise<ExtractRegionResult> {
+  const buffer = base64ToBuffer(base64);
+  const image = sharp(buffer);
+  const metadata = await image.metadata();
+
+  if (!metadata.width || !metadata.height) {
+    throw new Error("Unable to determine image dimensions");
+  }
+
+  if (x < 0 || y < 0 || width <= 0 || height <= 0) {
+    throw new Error("Invalid region parameters: x, y must be non-negative and width, height must be positive");
+  }
+
+  if (x + width > metadata.width || y + height > metadata.height) {
+    throw new Error(
+      `Region (${x}, ${y}, ${width}x${height}) exceeds image bounds (${metadata.width}x${metadata.height})`
+    );
+  }
+
+  const mimeType = formatToMimeType[metadata.format || ""] || "image/png";
+
+  const resultBuffer = await image
+    .extract({ left: x, top: y, width, height })
+    .toBuffer();
+
+  return {
+    buffer: resultBuffer,
+    base64: resultBuffer.toString("base64"),
+    mimeType,
+  };
+}
+
 export async function removeBackground(base64: string): Promise<RemoveBackgroundResult> {
   const buffer = base64ToBuffer(base64);
 

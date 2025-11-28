@@ -19,6 +19,7 @@ MCP (Model Context Protocol) server for image session management and processing.
 - **get_dimensions**: Get image dimensions and MIME type
 - **pick_color**: Extract average color from a specified region
 - **remove_background**: Remove background from images using ML-based segmentation
+- **extract_region**: Crop a rectangular region from an image
 - Built with TypeScript for type safety
 - Uses [sharp](https://sharp.pixelplumbing.com/) for high-performance image processing
 
@@ -307,6 +308,56 @@ Removes the background from an image using ML-based segmentation. Returns PNG wi
 |--------|-------|
 | ![Before](./images/background-before.png) | ![After](./images/background-after.png) |
 
+### extract_region
+
+Extracts (crops) a rectangular region from an image stored in a session. Returns the cropped image as a file or base64 payload.
+
+**Parameters:**
+
+- `sessionId` (string, required): The session ID returned from create_session
+- `x` (number, required): X coordinate of the top-left corner of the crop region
+- `y` (number, required): Y coordinate of the top-left corner of the crop region
+- `width` (number, required): Width of the crop region
+- `height` (number, required): Height of the crop region
+- `output_path` (string, optional): Absolute path to save the cropped image. If not provided, returns base64 payload.
+
+**Returns (without output_path):**
+
+```json
+{
+  "base64": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "mimeType": "image/png"
+}
+```
+
+**Returns (with output_path):**
+
+```json
+{
+  "success": true,
+  "path": "/path/to/cropped.png"
+}
+```
+
+**Example:**
+
+```json
+{
+  "sessionId": "img_abc123xyz",
+  "x": 100,
+  "y": 50,
+  "width": 200,
+  "height": 150,
+  "output_path": "/path/to/cropped.png"
+}
+```
+
+**Error Responses:**
+
+- Out of bounds: `Region (100, 50, 200x150) exceeds image bounds (150x100)`
+- Invalid coordinates: `Invalid coordinates: x and y must be non-negative values.`
+- Invalid dimensions: `Invalid dimensions: width and height must be positive values.`
+
 ## Usage Examples
 
 ### Example 1: Analyze an image
@@ -399,6 +450,7 @@ The project follows a modular architecture:
   - `get-image-size.ts`: Image dimensions extraction (get_dimensions)
   - `pick-color.ts`: Color extraction
   - `remove-background.ts`: ML-based background removal
+  - `extract-region.ts`: Image cropping
 - **utils/**: Shared utilities
   - `validation.ts`: Session ID validation
 - **server.ts**: Main MCP server setup and configuration
